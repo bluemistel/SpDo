@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
-    "preview": "electron-vite preview"
+    "preview": "electron-vite preview",
+    "dist": "npm run build && electron-builder"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -31,10 +32,36 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "electron": "^28.2.1",
+    "electron-builder": "^26.7.0",
     "electron-vite": "^2.0.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.1"
+  },
+  "build": {
+    "appId": "com.bluemistel.spdo",
+    "productName": "SpDo",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "resources/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SpDo"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ]
   }
 }
