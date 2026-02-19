@@ -43,13 +43,7 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
                 if (mode === 'stopwatch') {
                     setTimeLeft((prev) => prev + 1000)
                 } else {
-                    setTimeLeft((prev) => {
-                        if (prev <= 1000) {
-                            handleTimerComplete()
-                            return 0
-                        }
-                        return prev - 1000
-                    })
+                    setTimeLeft((prev) => Math.max(0, prev - 1000))
                 }
             }, 1000)
         } else {
@@ -61,37 +55,39 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
         }
     }, [isActive, mode])
 
+    // Handle timer completion side effects
+    useEffect(() => {
+        if (timeLeft === 0 && isActive && mode !== 'stopwatch') {
+            handleTimerComplete()
+        }
+    }, [timeLeft, isActive, mode])
+
     const handleTimerComplete = () => {
         setIsActive(false)
 
         if (mode === 'countdown') {
             playSound('countdownZero')
-            new Notification('Timer finished!')
+            window.api.showNotification('SpDo', 'タイマーが終了しました！')
         } else if (mode === 'pomodoro') {
             if (isWorkSession) {
-                // Finished work session
                 const newCompletedLoops = completedLoops + 1
                 setCompletedLoops(newCompletedLoops)
 
                 if (newCompletedLoops >= settings.loops) {
-                    // All loops done
                     playSound('pomodoroAllloopsEnd')
-                    new Notification('All Pomodoro cycles completed!')
+                    window.api.showNotification('SpDo', 'すべてのセッションが完了しました！')
                     setIsWorkSession(true)
                     setCompletedLoops(0)
                     setTimeLeft(settings.workDuration * 60 * 1000)
-                    return
                 } else {
-                    // Break time
                     playSound('pomodoroBreakStart')
-                    new Notification('Break time!')
+                    window.api.showNotification('SpDo', '休憩時間です！')
                     setIsWorkSession(false)
                     setTimeLeft(settings.breakDuration * 60 * 1000)
                 }
             } else {
-                // Finished break session
                 playSound('pomodoroLoopStart')
-                new Notification('Back to work!')
+                window.api.showNotification('SpDo', '仕事に戻りましょう！')
                 setIsWorkSession(true)
                 setTimeLeft(settings.workDuration * 60 * 1000)
             }

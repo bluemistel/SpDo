@@ -89,7 +89,9 @@ const api = {
   saveTags: (tags) => electron.ipcRenderer.invoke("save-tags", tags),
   getStatuses: () => electron.ipcRenderer.invoke("get-statuses"),
   saveStatuses: (statuses) => electron.ipcRenderer.invoke("save-statuses", statuses),
-  showNotification: (title, body) => electron.ipcRenderer.invoke("show-notification", title, body)
+  showNotification: (title, body) => electron.ipcRenderer.invoke("show-notification", title, body),
+  getLoginItemSettings: () => electron.ipcRenderer.invoke("get-login-item-settings"),
+  setLoginItemSettings: (settings) => electron.ipcRenderer.invoke("set-login-item-settings", settings)
 };
 if (process.contextIsolated) {
   try {

@@ -1,6 +1,6 @@
 {
   "name": "sp-do",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "SpDo",
   "main": "./out/main/index.js",
   "author": "BlueMist",

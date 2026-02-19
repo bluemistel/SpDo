@@ -147,7 +147,7 @@ function createWindow() {
 }
 electron.app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 electron.app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.bluemistel.spdo");
+  electronApp.setAppUserModelId("SpDo");
   electron.app.on("browser-window-created", (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
@@ -221,4 +221,14 @@ electron.ipcMain.handle("show-notification", (_, title, body) => {
   if (electron.Notification.isSupported()) {
     new electron.Notification({ title, body }).show();
   }
+});
+electron.ipcMain.handle("get-login-item-settings", () => {
+  return electron.app.getLoginItemSettings();
+});
+electron.ipcMain.handle("set-login-item-settings", (_, settings) => {
+  electron.app.setLoginItemSettings({
+    openAtLogin: settings.openAtLogin,
+    path: process.execPath,
+    name: electron.app.name
+  });
 });

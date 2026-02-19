@@ -26,10 +26,36 @@ const SOUND_EVENTS: { id: SoundEvent; label: string }[] = [
 
 export function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomodoroSettings }: SettingsModalProps) {
     const { soundSettings, volume, setSound, setVolume, playSound } = useSound()
-    const [activeTab, setActiveTab] = useState<'timer' | 'sound'>('timer')
+    const [activeTab, setActiveTab] = useState<'general' | 'timer' | 'sound'>('general')
     const [tempPomodoro, setTempPomodoro] = useState(pomodoroSettings)
+    const [autoLaunch, setAutoLaunch] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [selectingEvent, setSelectingEvent] = useState<SoundEvent | null>(null)
+
+    // Load auto-launch status
+    useEffect(() => {
+        const checkAutoLaunch = async () => {
+            try {
+                const settings = await window.api.getLoginItemSettings()
+                setAutoLaunch(settings.openAtLogin)
+            } catch (error) {
+                console.error('Failed to get login item settings:', error)
+            }
+        }
+        checkAutoLaunch()
+    }, [])
+
+    const handleToggleAutoLaunch = async () => {
+        const newValue = !autoLaunch
+        console.log('Toggling auto-launch to:', newValue)
+        try {
+            await window.api.setLoginItemSettings({ openAtLogin: newValue })
+            setAutoLaunch(newValue)
+            console.log('Successfully set login item settings')
+        } catch (error) {
+            console.error('Failed to set login item settings:', error)
+        }
+    }
 
     // Sync temp state when prop changes
     useEffect(() => {
@@ -82,6 +108,15 @@ export function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomod
 
                 <div className="flex border-b border-gray-100 dark:border-gray-700">
                     <button
+                        onClick={() => setActiveTab('general')}
+                        className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'general'
+                            ? 'text-accent border-b-2 border-accent'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                            }`}
+                    >
+                        全般
+                    </button>
+                    <button
                         onClick={() => setActiveTab('timer')}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'timer'
                             ? 'text-accent border-b-2 border-accent'
@@ -102,6 +137,27 @@ export function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomod
                 </div>
 
                 <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    {activeTab === 'general' && (
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200">システムの起動時に自動起動</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">パソコンの起動時にSpDoを自動的に開始します。</p>
+                                </div>
+                                <button
+                                    onClick={handleToggleAutoLaunch}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${autoLaunch ? 'bg-accent' : 'bg-gray-200 dark:bg-gray-700'
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoLaunch ? 'translate-x-6' : 'translate-x-1'
+                                            }`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {activeTab === 'timer' && (
                         <div className="space-y-4">
                             <div>

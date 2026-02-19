@@ -7029,6 +7029,17 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
+const Archive = createLucideIcon("Archive", [
+  ["rect", { width: "20", height: "5", x: "2", y: "3", rx: "1", key: "1wp1u1" }],
+  ["path", { d: "M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8", key: "1s80jp" }],
+  ["path", { d: "M10 12h4", key: "a56b0p" }]
+]);
+/**
+ * @license lucide-react v0.330.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
 const ArrowDownWideNarrow = createLucideIcon("ArrowDownWideNarrow", [
   ["path", { d: "m3 16 4 4 4-4", key: "1co6wj" }],
   ["path", { d: "M7 20V4", key: "1yoxec" }],
@@ -7546,13 +7557,7 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
         if (mode === "stopwatch") {
           setTimeLeft((prev) => prev + 1e3);
         } else {
-          setTimeLeft((prev) => {
-            if (prev <= 1e3) {
-              handleTimerComplete();
-              return 0;
-            }
-            return prev - 1e3;
-          });
+          setTimeLeft((prev) => Math.max(0, prev - 1e3));
         }
       }, 1e3);
     } else {
@@ -7562,31 +7567,35 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isActive, mode]);
+  reactExports.useEffect(() => {
+    if (timeLeft === 0 && isActive && mode !== "stopwatch") {
+      handleTimerComplete();
+    }
+  }, [timeLeft, isActive, mode]);
   const handleTimerComplete = () => {
     setIsActive(false);
     if (mode === "countdown") {
       playSound("countdownZero");
-      new Notification("Timer finished!");
+      window.api.showNotification("SpDo", "タイマーが終了しました！");
     } else if (mode === "pomodoro") {
       if (isWorkSession) {
         const newCompletedLoops = completedLoops + 1;
         setCompletedLoops(newCompletedLoops);
         if (newCompletedLoops >= settings.loops) {
           playSound("pomodoroAllloopsEnd");
-          new Notification("All Pomodoro cycles completed!");
+          window.api.showNotification("SpDo", "すべてのセッションが完了しました！");
           setIsWorkSession(true);
           setCompletedLoops(0);
           setTimeLeft(settings.workDuration * 60 * 1e3);
-          return;
         } else {
           playSound("pomodoroBreakStart");
-          new Notification("Break time!");
+          window.api.showNotification("SpDo", "休憩時間です！");
           setIsWorkSession(false);
           setTimeLeft(settings.breakDuration * 60 * 1e3);
         }
       } else {
         playSound("pomodoroLoopStart");
-        new Notification("Back to work!");
+        window.api.showNotification("SpDo", "仕事に戻りましょう！");
         setIsWorkSession(true);
         setTimeLeft(settings.workDuration * 60 * 1e3);
       }
@@ -7751,10 +7760,33 @@ const SOUND_EVENTS = [
 ];
 function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomodoroSettings }) {
   const { soundSettings, volume, setSound, setVolume, playSound } = useSound();
-  const [activeTab, setActiveTab] = reactExports.useState("timer");
+  const [activeTab, setActiveTab] = reactExports.useState("general");
   const [tempPomodoro, setTempPomodoro] = reactExports.useState(pomodoroSettings);
+  const [autoLaunch, setAutoLaunch] = reactExports.useState(false);
   const fileInputRef = reactExports.useRef(null);
   const [selectingEvent, setSelectingEvent] = reactExports.useState(null);
+  reactExports.useEffect(() => {
+    const checkAutoLaunch = async () => {
+      try {
+        const settings = await window.api.getLoginItemSettings();
+        setAutoLaunch(settings.openAtLogin);
+      } catch (error) {
+        console.error("Failed to get login item settings:", error);
+      }
+    };
+    checkAutoLaunch();
+  }, []);
+  const handleToggleAutoLaunch = async () => {
+    const newValue = !autoLaunch;
+    console.log("Toggling auto-launch to:", newValue);
+    try {
+      await window.api.setLoginItemSettings({ openAtLogin: newValue });
+      setAutoLaunch(newValue);
+      console.log("Successfully set login item settings");
+    } catch (error) {
+      console.error("Failed to set login item settings:", error);
+    }
+  };
   reactExports.useEffect(() => {
     setTempPomodoro(pomodoroSettings);
   }, [pomodoroSettings]);
@@ -7792,6 +7824,14 @@ function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomodoroSett
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
+          onClick: () => setActiveTab("general"),
+          className: `flex-1 py-3 text-sm font-medium transition-colors ${activeTab === "general" ? "text-accent border-b-2 border-accent" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`,
+          children: "全般"
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
           onClick: () => setActiveTab("timer"),
           className: `flex-1 py-3 text-sm font-medium transition-colors ${activeTab === "timer" ? "text-accent border-b-2 border-accent" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"}`,
           children: "ポモドーロ"
@@ -7807,6 +7847,25 @@ function SettingsModal({ isOpen, onClose, pomodoroSettings, onUpdatePomodoroSett
       )
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-6 max-h-[60vh] overflow-y-auto custom-scrollbar", children: [
+      activeTab === "general" && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-6", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-sm font-medium text-gray-800 dark:text-gray-200", children: "システムの起動時に自動起動" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-gray-500 dark:text-gray-400 mt-1", children: "パソコンの起動時にSpDoを自動的に開始します。" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            onClick: handleToggleAutoLaunch,
+            className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${autoLaunch ? "bg-accent" : "bg-gray-200 dark:bg-gray-700"}`,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "span",
+              {
+                className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoLaunch ? "translate-x-6" : "translate-x-1"}`
+              }
+            )
+          }
+        )
+      ] }) }),
       activeTab === "timer" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1", children: "ポモドーロの作業時間 (分)" }),
@@ -7989,8 +8048,8 @@ function Header({
               children: collapsed ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { size: 16, color: "white" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronUp, { size: 16, color: "white" })
             }
           ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-white text-sm font-semibold drop-shadow-sm", children: "ToDo" }),
-          !collapsed && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ml-2 border-l border-white/30 pl-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Timer, { settings: pomodoroSettings }) })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-white text-sm font-semibold drop-shadow-sm", children: "SpDo" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ml-2 border-l border-white/30 pl-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Timer, { settings: pomodoroSettings }) })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", style: { WebkitAppRegion: "no-drag" }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -8652,44 +8711,6 @@ function getFirstCollision(collisions, property) {
   const [firstCollision] = collisions;
   return firstCollision[property];
 }
-function centerOfRectangle(rect, left, top) {
-  if (left === void 0) {
-    left = rect.left;
-  }
-  if (top === void 0) {
-    top = rect.top;
-  }
-  return {
-    x: left + rect.width * 0.5,
-    y: top + rect.height * 0.5
-  };
-}
-const closestCenter = (_ref) => {
-  let {
-    collisionRect,
-    droppableRects,
-    droppableContainers
-  } = _ref;
-  const centerRect = centerOfRectangle(collisionRect, collisionRect.left, collisionRect.top);
-  const collisions = [];
-  for (const droppableContainer of droppableContainers) {
-    const {
-      id: id2
-    } = droppableContainer;
-    const rect = droppableRects.get(id2);
-    if (rect) {
-      const distBetween = distanceBetween(centerOfRectangle(rect), centerRect);
-      collisions.push({
-        id: id2,
-        data: {
-          droppableContainer,
-          value: distBetween
-        }
-      });
-    }
-  }
-  return collisions.sort(sortCollisionsAsc);
-};
 const closestCorners = (_ref) => {
   let {
     collisionRect,
@@ -14008,6 +14029,7 @@ function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEditTask }
                 {
                   onClick: handleSaveEdit,
                   className: "flex items-center gap-1 px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors",
+                  title: "保存",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 12 }),
                     "保存"
@@ -14019,6 +14041,7 @@ function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEditTask }
                 {
                   onClick: handleCancelEdit,
                   className: "flex items-center gap-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors",
+                  title: "キャンセル",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 12 }),
                     "キャンセル"
@@ -14041,14 +14064,27 @@ function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEditTask }
         /* @__PURE__ */ jsxRuntimeExports.jsx("button", { ...attributes, ...listeners, className: "cursor-grab active:cursor-grabbing mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(GripVertical, { size: 16, className: "text-gray-400" }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-medium text-gray-800 dark:text-gray-100 break-words", children: task.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm font-medium text-gray-800 dark:text-gray-100 break-words", children: [
+              task.title,
+              task.archived && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-2 text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded border border-gray-200 dark:border-gray-600 font-normal", children: "アーカイブ済み" })
+            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-1 flex-shrink-0", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "button",
                 {
                   onClick: () => setIsEditing(true),
                   className: "text-gray-400 hover:text-blue-500 transition-colors",
+                  title: "編集",
                   children: /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { size: 14 })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  onClick: () => onEditTask(task.id, { archived: !task.archived }),
+                  className: "text-gray-400 hover:text-amber-500 transition-colors",
+                  title: task.archived ? "元に戻す" : "アーカイブ",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Archive, { size: 14 })
                 }
               ),
               /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -14056,6 +14092,7 @@ function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEditTask }
                 {
                   onClick: () => onDelete(task.id),
                   className: "text-gray-400 hover:text-red-500 transition-colors",
+                  title: "削除",
                   children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { size: 14 })
                 }
               )
@@ -14100,7 +14137,11 @@ function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEditTask }
 }
 function TaskList({ tasks, statuses, tags, onReorder, onDelete, onStatusChange, onEditTask }) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5
+      }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates
     })
@@ -14116,13 +14157,11 @@ function TaskList({ tasks, statuses, tags, onReorder, onDelete, onStatusChange, 
   if (tasks.length === 0) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-center text-gray-400 text-sm py-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "タスクがありません" }) });
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(DndContext, { sensors, collisionDetection: closestCenter, onDragEnd: handleDragEnd, children: /* @__PURE__ */ jsxRuntimeExports.jsx(SortableContext, { items: tasks.map((t2) => t2.id), strategy: verticalListSortingStrategy, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: tasks.map((task) => {
-    const status = statuses.find((s) => s.id === task.statusId) || statuses[0];
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(DndContext, { sensors, collisionDetection: closestCorners, onDragEnd: handleDragEnd, children: /* @__PURE__ */ jsxRuntimeExports.jsx(SortableContext, { items: tasks.map((t2) => t2.id), strategy: verticalListSortingStrategy, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-2", children: tasks.map((task) => {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       TaskItem,
       {
         task,
-        status,
         statuses,
         tags,
         onDelete,
@@ -14378,7 +14417,7 @@ function KanbanView({
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-full overflow-x-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col lg:flex-row gap-4 h-full min-w-full pb-2", children: statuses.map((status) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
-      className: "flex-1 min-w-[300px] flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 h-full max-h-full overflow-hidden",
+      className: "flex-1 min-w-[300px] flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 h-full max-h-full",
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "div",
@@ -14546,6 +14585,9 @@ function App() {
     setShowArchived(!showArchived);
   };
   const handleSortChange = (newSortBy) => {
+    if (newSortBy === "custom" && sortBy !== "custom") {
+      setTasks(filteredAndSortedTasks);
+    }
     setSortBy(newSortBy);
   };
   const handleToggleSortOrder = () => {

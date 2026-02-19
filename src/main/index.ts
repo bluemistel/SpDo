@@ -55,7 +55,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 app.whenReady().then(() => {
     // Set app user model id for windows
-    electronApp.setAppUserModelId('com.bluemistel.spdo')
+    electronApp.setAppUserModelId('SpDo')
 
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
@@ -156,6 +156,18 @@ ipcMain.handle('show-notification', (_, title: string, body: string) => {
     if (Notification.isSupported()) {
         new Notification({ title, body }).show()
     }
+})
+
+ipcMain.handle('get-login-item-settings', () => {
+    return app.getLoginItemSettings()
+})
+
+ipcMain.handle('set-login-item-settings', (_, settings: { openAtLogin: boolean }) => {
+    app.setLoginItemSettings({
+        openAtLogin: settings.openAtLogin,
+        path: process.execPath,
+        name: app.name
+    })
 })
 
 // In this file you can include the rest of your app"s specific main process
