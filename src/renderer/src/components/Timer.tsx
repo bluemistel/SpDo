@@ -63,9 +63,8 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
     }, [timeLeft, isActive, mode])
 
     const handleTimerComplete = () => {
-        setIsActive(false)
-
         if (mode === 'countdown') {
+            setIsActive(false)
             playSound('countdownZero')
             window.api.showNotification('SpDo', 'タイマーが終了しました！')
         } else if (mode === 'pomodoro') {
@@ -74,6 +73,7 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
                 setCompletedLoops(newCompletedLoops)
 
                 if (newCompletedLoops >= settings.loops) {
+                    setIsActive(false)
                     playSound('pomodoroAllloopsEnd')
                     window.api.showNotification('SpDo', 'すべてのセッションが完了しました！')
                     setIsWorkSession(true)

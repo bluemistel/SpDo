@@ -7573,8 +7573,8 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
     }
   }, [timeLeft, isActive, mode]);
   const handleTimerComplete = () => {
-    setIsActive(false);
     if (mode === "countdown") {
+      setIsActive(false);
       playSound("countdownZero");
       window.api.showNotification("SpDo", "タイマーが終了しました！");
     } else if (mode === "pomodoro") {
@@ -7582,6 +7582,7 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
         const newCompletedLoops = completedLoops + 1;
         setCompletedLoops(newCompletedLoops);
         if (newCompletedLoops >= settings.loops) {
+          setIsActive(false);
           playSound("pomodoroAllloopsEnd");
           window.api.showNotification("SpDo", "すべてのセッションが完了しました！");
           setIsWorkSession(true);
