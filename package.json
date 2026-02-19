@@ -1,9 +1,9 @@
 {
   "name": "sp-do",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SpDo",
   "main": "./out/main/index.js",
-  "author": "Antigravity",
+  "author": "BlueMist",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "dev": "electron-vite dev",

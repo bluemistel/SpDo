@@ -106,8 +106,10 @@ const store = new Store({
     ]
   }
 });
+electron.app.name = "SpDo";
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
+    title: "SpDo",
     width: 400,
     height: 600,
     minWidth: 320,
@@ -145,7 +147,7 @@ function createWindow() {
 }
 electron.app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 electron.app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.electron");
+  electronApp.setAppUserModelId("com.bluemistel.spdo");
   electron.app.on("browser-window-created", (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
@@ -191,7 +193,7 @@ electron.ipcMain.handle("resize-window", (event, collapsed) => {
   const window = electron.BrowserWindow.fromWebContents(event.sender);
   if (window) {
     if (collapsed) {
-      window.setSize(60, 60);
+      window.setSize(200, 60);
     } else {
       window.setSize(400, 600);
     }

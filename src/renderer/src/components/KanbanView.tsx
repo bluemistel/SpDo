@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Task, Status, Tag } from '../types'
 import { TaskList } from './TaskList'
-import { Status as StatusType } from '../types'
 
 interface KanbanViewProps {
     tasks: Task[]
@@ -38,7 +37,7 @@ export function KanbanView({
                 {statuses.map((status) => (
                     <div
                         key={status.id}
-                        className="flex-1 min-w-[300px] flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 h-full max-h-full overflow-hidden"
+                        className="flex-1 min-w-[300px] flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 h-full max-h-full"
                     >
                         <div
                             className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-gray-50 dark:bg-gray-800 z-10"

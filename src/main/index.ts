@@ -3,9 +3,13 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { store } from './store'
 
+// Set app name for notifications
+app.name = 'SpDo'
+
 function createWindow(): void {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
+        title: 'SpDo',
         width: 400,
         height: 600,
         minWidth: 320,
@@ -51,7 +55,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 app.whenReady().then(() => {
     // Set app user model id for windows
-    electronApp.setAppUserModelId('com.electron')
+    electronApp.setAppUserModelId('com.bluemistel.spdo')
 
     // Default open or close DevTools by F12 in development
     // and ignore CommandOrControl + R in production.
@@ -116,7 +120,7 @@ ipcMain.handle('resize-window', (event, collapsed: boolean) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
         if (collapsed) {
-            window.setSize(60, 60)
+            window.setSize(200, 60)
         } else {
             window.setSize(400, 600)
         }

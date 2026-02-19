@@ -58,14 +58,11 @@ export function Header({
                 >
                     {collapsed ? <ChevronDown size={16} color="white" /> : <ChevronUp size={16} color="white" />}
                 </button>
-                <span className="text-white text-sm font-semibold drop-shadow-sm">ToDo</span>
+                <span className="text-white text-sm font-semibold drop-shadow-sm">SpDo</span>
 
-                {/* Timer Component - Only show when not collapsed */}
-                {!collapsed && (
-                    <div className="ml-2 border-l border-white/30 pl-2">
-                        <Timer settings={pomodoroSettings} />
-                    </div>
-                )}
+                <div className="ml-2 border-l border-white/30 pl-2">
+                    <Timer settings={pomodoroSettings} />
+                </div>
             </div>
 
             <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>

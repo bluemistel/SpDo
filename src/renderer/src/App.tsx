@@ -178,6 +178,10 @@ function App(): JSX.Element {
     }
 
     const handleSortChange = (newSortBy: 'dueDate' | 'createdAt' | 'status' | 'custom') => {
+        if (newSortBy === 'custom' && sortBy !== 'custom') {
+            // Keep current visual order as the new custom order
+            setTasks(filteredAndSortedTasks)
+        }
         setSortBy(newSortBy)
     }
 

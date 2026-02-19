@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Calendar, Trash2, Edit2, Check, X, Tag as TagIcon } from 'lucide-react'
+import { GripVertical, Calendar, Trash2, Edit2, Check, X, Tag as TagIcon, Archive } from 'lucide-react'
 import { Task, Status, Tag } from '../types'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -102,6 +102,7 @@ export function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEdi
                             <button
                                 onClick={handleSaveEdit}
                                 className="flex items-center gap-1 px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                                title="保存"
                             >
                                 <Check size={12} />
                                 保存
@@ -109,6 +110,7 @@ export function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEdi
                             <button
                                 onClick={handleCancelEdit}
                                 className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                title="キャンセル"
                             >
                                 <X size={12} />
                                 キャンセル
@@ -132,17 +134,33 @@ export function TaskItem({ task, statuses, tags, onDelete, onStatusChange, onEdi
                 </button>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 break-words">{task.title}</p>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
+                            {task.title}
+                            {task.archived && (
+                                <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded border border-gray-200 dark:border-gray-600 font-normal">
+                                    アーカイブ済み
+                                </span>
+                            )}
+                        </p>
                         <div className="flex gap-1 flex-shrink-0">
                             <button
                                 onClick={() => setIsEditing(true)}
                                 className="text-gray-400 hover:text-blue-500 transition-colors"
+                                title="編集"
                             >
                                 <Edit2 size={14} />
                             </button>
                             <button
+                                onClick={() => onEditTask(task.id, { archived: !task.archived })}
+                                className="text-gray-400 hover:text-amber-500 transition-colors"
+                                title={task.archived ? '元に戻す' : 'アーカイブ'}
+                            >
+                                <Archive size={14} />
+                            </button>
+                            <button
                                 onClick={() => onDelete(task.id)}
                                 className="text-gray-400 hover:text-red-500 transition-colors"
+                                title="削除"
                             >
                                 <Trash2 size={14} />
                             </button>

@@ -1,4 +1,4 @@
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Task, Status, Tag } from '../types'
 import { TaskItem } from './TaskItem'
@@ -15,7 +15,11 @@ interface TaskListProps {
 
 export function TaskList({ tasks, statuses, tags, onReorder, onDelete, onStatusChange, onEditTask }: TaskListProps): JSX.Element {
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5
+            }
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates
         })
@@ -40,16 +44,14 @@ export function TaskList({ tasks, statuses, tags, onReorder, onDelete, onStatusC
     }
 
     return (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
             <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-2">
                     {tasks.map((task) => {
-                        const status = statuses.find((s) => s.id === task.statusId) || statuses[0]
                         return (
                             <TaskItem
                                 key={task.id}
                                 task={task}
-                                status={status}
                                 statuses={statuses}
                                 tags={tags}
                                 onDelete={onDelete}
