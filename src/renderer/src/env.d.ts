@@ -14,6 +14,8 @@ interface IElectronAPI {
     showNotification: (title: string, body: string) => Promise<void>
     getLoginItemSettings: () => Promise<any>
     setLoginItemSettings: (settings: any) => Promise<void>
+    getAppSettings: () => Promise<any>
+    saveAppSettings: (settings: any) => Promise<void>
 }
 
 declare global {

@@ -11,6 +11,12 @@ interface HeaderProps {
     onTogglePin: () => void
     onMinimize: () => void
     onClose: () => void
+    pomodoroSettings: {
+        workDuration: number
+        breakDuration: number
+        loops: number
+    }
+    onUpdatePomodoroSettings: (settings: { workDuration: number; breakDuration: number; loops: number }) => void
 }
 
 export function Header({
@@ -19,17 +25,14 @@ export function Header({
     onToggleCollapse,
     onTogglePin,
     onMinimize,
-    onClose
+    onClose,
+    pomodoroSettings,
+    onUpdatePomodoroSettings
 }: HeaderProps): JSX.Element {
     const { themeColor, setThemeColor, isDarkMode, setIsDarkMode, colors } = useTheme()
     const [showThemeMenu, setShowThemeMenu] = useState(false)
     const [showSettings, setShowSettings] = useState(false)
 
-    const [pomodoroSettings, setPomodoroSettings] = useState({
-        workDuration: 25,
-        breakDuration: 5,
-        loops: 4
-    })
 
     const themes: { id: ThemeColor; label: string; color: string }[] = [
         { id: 'blue', label: 'Blue', color: '#3b82f6' },
@@ -67,19 +70,21 @@ export function Header({
 
             <div className="flex items-center gap-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
                 {/* Settings Button */}
-                <button
-                    onClick={() => setShowSettings(true)}
-                    className="p-1 hover:bg-white/20 rounded transition-colors"
-                    title="Settings"
-                >
-                    <Settings size={14} color="white" />
-                </button>
+                {!collapsed && (
+                    <button
+                        onClick={() => setShowSettings(true)}
+                        className="p-1 hover:bg-white/20 rounded transition-colors"
+                        title="Settings"
+                    >
+                        <Settings size={14} color="white" />
+                    </button>
+                )}
 
                 <SettingsModal
                     isOpen={showSettings}
                     onClose={() => setShowSettings(false)}
                     pomodoroSettings={pomodoroSettings}
-                    onUpdatePomodoroSettings={setPomodoroSettings}
+                    onUpdatePomodoroSettings={onUpdatePomodoroSettings}
                 />
 
                 {/* Theme Selector */}

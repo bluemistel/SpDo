@@ -152,13 +152,6 @@ electron.app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
   createWindow();
-  electron.globalShortcut.register("CommandOrControl+Shift+T", () => {
-    const windows = electron.BrowserWindow.getAllWindows();
-    if (windows.length > 0) {
-      windows[0].show();
-      windows[0].focus();
-    }
-  });
   electron.app.on("activate", function() {
     if (electron.BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -231,4 +224,10 @@ electron.ipcMain.handle("set-login-item-settings", (_, settings) => {
     path: process.execPath,
     name: electron.app.name
   });
+});
+electron.ipcMain.handle("get-app-settings", () => {
+  return store.get("appSettings", {});
+});
+electron.ipcMain.handle("save-app-settings", (_, settings) => {
+  store.set("appSettings", settings);
 });

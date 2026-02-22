@@ -25,6 +25,11 @@ function App(): JSX.Element {
     const [showArchived, setShowArchived] = useState(false)
     const [sortBy, setSortBy] = useState<'dueDate' | 'createdAt' | 'status' | 'custom'>('dueDate')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+    const [pomodoroSettings, setPomodoroSettings] = useState({
+        workDuration: 25,
+        breakDuration: 5,
+        loops: 4
+    })
     const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
     const [isLoaded, setIsLoaded] = useState(false)
 
@@ -34,14 +39,33 @@ function App(): JSX.Element {
             const savedTasks = (await window.api.getTasks()) as Task[]
             const savedTags = (await window.api.getTags()) as Tag[]
             const savedStatuses = (await window.api.getStatuses()) as Status[]
-            console.log('[App] Loaded data:', { savedTasks, savedTags, savedStatuses })
+            const savedAppSettings = await window.api.getAppSettings()
+            console.log('[App] Loaded app settings:', savedAppSettings)
+
             if (savedTasks) setTasks(savedTasks)
             if (savedTags) setTags(savedTags)
             if (savedStatuses.length > 0) setStatuses(savedStatuses)
+
+            if (savedAppSettings.sortBy) setSortBy(savedAppSettings.sortBy)
+            if (savedAppSettings.sortOrder) setSortOrder(savedAppSettings.sortOrder)
+            if (savedAppSettings.pomodoroSettings) setPomodoroSettings(savedAppSettings.pomodoroSettings)
+
             setIsLoaded(true)
         }
         loadData()
     }, [])
+
+    // Save app settings whenever they change
+    useEffect(() => {
+        if (!isLoaded) return
+        const appSettings = {
+            sortBy,
+            sortOrder,
+            pomodoroSettings
+        }
+        console.log('[App] Saving app settings:', appSettings)
+        window.api.saveAppSettings(appSettings)
+    }, [sortBy, sortOrder, pomodoroSettings, isLoaded])
 
     // Save tasks whenever they change
     useEffect(() => {
@@ -222,8 +246,8 @@ function App(): JSX.Element {
     }, [tasks, showArchived, selectedTags, sortBy, sortOrder])
 
     return (
-        <div className={`flex flex-col bg-transparent p-2 ${collapsed ? 'h-fit' : 'h-screen'}`}>
-            <div className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? 'h-fit' : 'h-full'} ${viewMode === 'kanban' && !collapsed ? 'w-full max-w-full' : 'max-w-sm'
+        <div className={`flex flex-col bg-transparent p-2 ${collapsed ? 'h-fit overflow-x-hidden' : 'h-screen'}`}>
+            <div className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? 'h-fit overflow-x-hidden' : 'h-full'} ${viewMode === 'kanban' && !collapsed ? 'w-full max-w-full' : 'max-w-sm'
                 }`}>
                 <Header
                     collapsed={collapsed}
@@ -232,6 +256,8 @@ function App(): JSX.Element {
                     onTogglePin={handleTogglePin}
                     onMinimize={handleMinimize}
                     onClose={handleClose}
+                    pomodoroSettings={pomodoroSettings}
+                    onUpdatePomodoroSettings={setPomodoroSettings}
                 />
                 {!collapsed && (
                     <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 transition-colors">

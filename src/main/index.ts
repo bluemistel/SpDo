@@ -66,15 +66,6 @@ app.whenReady().then(() => {
 
     createWindow()
 
-    // Register global shortcut for quick add (Ctrl+Shift+T)
-    globalShortcut.register('CommandOrControl+Shift+T', () => {
-        const windows = BrowserWindow.getAllWindows()
-        if (windows.length > 0) {
-            windows[0].show()
-            windows[0].focus()
-        }
-    })
-
     app.on('activate', function () {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
@@ -168,6 +159,14 @@ ipcMain.handle('set-login-item-settings', (_, settings: { openAtLogin: boolean }
         path: process.execPath,
         name: app.name
     })
+})
+
+ipcMain.handle('get-app-settings', () => {
+    return store.get('appSettings', {})
+})
+
+ipcMain.handle('save-app-settings', (_, settings) => {
+    store.set('appSettings', settings)
 })
 
 // In this file you can include the rest of your app"s specific main process

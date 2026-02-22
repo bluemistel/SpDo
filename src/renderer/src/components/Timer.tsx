@@ -30,11 +30,24 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
     const { playSound } = useSound()
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+    const prevDurations = useRef({ work: settings.workDuration, break: settings.breakDuration })
+
     // Update time when settings change
     useEffect(() => {
         if (!isActive && mode === 'pomodoro') {
-            setTimeLeft(isWorkSession ? settings.workDuration * 60 * 1000 : settings.breakDuration * 60 * 1000)
+            const oldDuration = isWorkSession
+                ? prevDurations.current.work * 60 * 1000
+                : prevDurations.current.break * 60 * 1000;
+            const newDuration = isWorkSession
+                ? settings.workDuration * 60 * 1000
+                : settings.breakDuration * 60 * 1000;
+
+            // If the time left is still the "start" time of the previous setting, update it
+            if (timeLeft === oldDuration) {
+                setTimeLeft(newDuration)
+            }
         }
+        prevDurations.current = { work: settings.workDuration, break: settings.breakDuration }
     }, [settings, isWorkSession, mode, isActive])
 
     useEffect(() => {
@@ -87,7 +100,7 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
                 }
             } else {
                 playSound('pomodoroLoopStart')
-                window.api.showNotification('SpDo', '仕事に戻りましょう！')
+                window.api.showNotification('SpDo', '作業に戻りましょう！')
                 setIsWorkSession(true)
                 setTimeLeft(settings.workDuration * 60 * 1000)
             }
@@ -132,7 +145,7 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
     const switchMode = (newMode: TimerMode) => {
         setMode(newMode)
         setIsActive(false)
-        setShowMenu(false)
+        // setShowMenu(false) // Keep menu open as requested
         if (newMode === 'pomodoro') {
             setIsWorkSession(true)
             setCompletedLoops(0)

@@ -15,7 +15,9 @@ const api = {
     saveStatuses: (statuses: unknown) => ipcRenderer.invoke('save-statuses', statuses),
     showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', title, body),
     getLoginItemSettings: () => ipcRenderer.invoke('get-login-item-settings'),
-    setLoginItemSettings: (settings: any) => ipcRenderer.invoke('set-login-item-settings', settings)
+    setLoginItemSettings: (settings: any) => ipcRenderer.invoke('set-login-item-settings', settings),
+    getAppSettings: () => ipcRenderer.invoke('get-app-settings'),
+    saveAppSettings: (settings: any) => ipcRenderer.invoke('save-app-settings', settings)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
