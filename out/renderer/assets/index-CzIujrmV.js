@@ -7546,10 +7546,16 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
   const [completedLoops, setCompletedLoops] = reactExports.useState(0);
   const { playSound } = useSound();
   const intervalRef = reactExports.useRef(null);
+  const prevDurations = reactExports.useRef({ work: settings.workDuration, break: settings.breakDuration });
   reactExports.useEffect(() => {
     if (!isActive && mode === "pomodoro") {
-      setTimeLeft(isWorkSession ? settings.workDuration * 60 * 1e3 : settings.breakDuration * 60 * 1e3);
+      const oldDuration = isWorkSession ? prevDurations.current.work * 60 * 1e3 : prevDurations.current.break * 60 * 1e3;
+      const newDuration = isWorkSession ? settings.workDuration * 60 * 1e3 : settings.breakDuration * 60 * 1e3;
+      if (timeLeft === oldDuration) {
+        setTimeLeft(newDuration);
+      }
     }
+    prevDurations.current = { work: settings.workDuration, break: settings.breakDuration };
   }, [settings, isWorkSession, mode, isActive]);
   reactExports.useEffect(() => {
     if (isActive) {
@@ -7596,7 +7602,7 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
         }
       } else {
         playSound("pomodoroLoopStart");
-        window.api.showNotification("SpDo", "仕事に戻りましょう！");
+        window.api.showNotification("SpDo", "作業に戻りましょう！");
         setIsWorkSession(true);
         setTimeLeft(settings.workDuration * 60 * 1e3);
       }
@@ -7637,7 +7643,6 @@ function Timer({ settings = DEFAULT_SETTINGS }) {
   const switchMode = (newMode) => {
     setMode(newMode);
     setIsActive(false);
-    setShowMenu(false);
     if (newMode === "pomodoro") {
       setIsWorkSession(true);
       setCompletedLoops(0);
@@ -8010,16 +8015,13 @@ function Header({
   onToggleCollapse,
   onTogglePin,
   onMinimize,
-  onClose
+  onClose,
+  pomodoroSettings,
+  onUpdatePomodoroSettings
 }) {
   const { themeColor, setThemeColor, isDarkMode, setIsDarkMode, colors } = useTheme();
   const [showThemeMenu, setShowThemeMenu] = reactExports.useState(false);
   const [showSettings, setShowSettings] = reactExports.useState(false);
-  const [pomodoroSettings, setPomodoroSettings] = reactExports.useState({
-    workDuration: 25,
-    breakDuration: 5,
-    loops: 4
-  });
   const themes = [
     { id: "blue", label: "Blue", color: "#3b82f6" },
     { id: "green", label: "Green", color: "#10b981" },
@@ -8053,7 +8055,7 @@ function Header({
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ml-2 border-l border-white/30 pl-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Timer, { settings: pomodoroSettings }) })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", style: { WebkitAppRegion: "no-drag" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+          !collapsed && /* @__PURE__ */ jsxRuntimeExports.jsx(
             "button",
             {
               onClick: () => setShowSettings(true),
@@ -8068,7 +8070,7 @@ function Header({
               isOpen: showSettings,
               onClose: () => setShowSettings(false),
               pomodoroSettings,
-              onUpdatePomodoroSettings: setPomodoroSettings
+              onUpdatePomodoroSettings
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
@@ -14466,6 +14468,11 @@ function App() {
   const [showArchived, setShowArchived] = reactExports.useState(false);
   const [sortBy, setSortBy] = reactExports.useState("dueDate");
   const [sortOrder, setSortOrder] = reactExports.useState("asc");
+  const [pomodoroSettings, setPomodoroSettings] = reactExports.useState({
+    workDuration: 25,
+    breakDuration: 5,
+    loops: 4
+  });
   const [viewMode, setViewMode] = reactExports.useState("list");
   const [isLoaded, setIsLoaded] = reactExports.useState(false);
   reactExports.useEffect(() => {
@@ -14473,14 +14480,28 @@ function App() {
       const savedTasks = await window.api.getTasks();
       const savedTags = await window.api.getTags();
       const savedStatuses = await window.api.getStatuses();
-      console.log("[App] Loaded data:", { savedTasks, savedTags, savedStatuses });
+      const savedAppSettings = await window.api.getAppSettings();
+      console.log("[App] Loaded app settings:", savedAppSettings);
       if (savedTasks) setTasks(savedTasks);
       if (savedTags) setTags(savedTags);
       if (savedStatuses.length > 0) setStatuses(savedStatuses);
+      if (savedAppSettings.sortBy) setSortBy(savedAppSettings.sortBy);
+      if (savedAppSettings.sortOrder) setSortOrder(savedAppSettings.sortOrder);
+      if (savedAppSettings.pomodoroSettings) setPomodoroSettings(savedAppSettings.pomodoroSettings);
       setIsLoaded(true);
     };
     loadData();
   }, []);
+  reactExports.useEffect(() => {
+    if (!isLoaded) return;
+    const appSettings = {
+      sortBy,
+      sortOrder,
+      pomodoroSettings
+    };
+    console.log("[App] Saving app settings:", appSettings);
+    window.api.saveAppSettings(appSettings);
+  }, [sortBy, sortOrder, pomodoroSettings, isLoaded]);
   reactExports.useEffect(() => {
     if (!isLoaded) return;
     console.log("[App] Saving tasks:", tasks);
@@ -14618,7 +14639,7 @@ function App() {
     }
     return filtered;
   }, [tasks, showArchived, selectedTags, sortBy, sortOrder]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `flex flex-col bg-transparent p-2 ${collapsed ? "h-fit" : "h-screen"}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? "h-fit" : "h-full"} ${viewMode === "kanban" && !collapsed ? "w-full max-w-full" : "max-w-sm"}`, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `flex flex-col bg-transparent p-2 ${collapsed ? "h-fit overflow-x-hidden" : "h-screen"}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? "h-fit overflow-x-hidden" : "h-full"} ${viewMode === "kanban" && !collapsed ? "w-full max-w-full" : "max-w-sm"}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       Header,
       {
@@ -14627,7 +14648,9 @@ function App() {
         onToggleCollapse: handleToggleCollapse,
         onTogglePin: handleTogglePin,
         onMinimize: handleMinimize,
-        onClose: handleClose
+        onClose: handleClose,
+        pomodoroSettings,
+        onUpdatePomodoroSettings: setPomodoroSettings
       }
     ),
     !collapsed && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 transition-colors", children: [
