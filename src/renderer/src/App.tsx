@@ -246,8 +246,8 @@ function App(): JSX.Element {
     }, [tasks, showArchived, selectedTags, sortBy, sortOrder])
 
     return (
-        <div className={`flex flex-col bg-transparent p-2 ${collapsed ? 'h-fit overflow-x-hidden' : 'h-screen'}`}>
-            <div className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? 'h-fit overflow-x-hidden' : 'h-full'} ${viewMode === 'kanban' && !collapsed ? 'w-full max-w-full' : 'max-w-sm'
+        <div className={`flex flex-col bg-transparent p-2 ${collapsed ? 'h-fit' : 'h-screen'}`}>
+            <div className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${collapsed ? 'h-fit' : 'h-full'} ${viewMode === 'kanban' && !collapsed ? 'w-full max-w-full' : 'w-full max-w-sm'
                 }`}>
                 <Header
                     collapsed={collapsed}

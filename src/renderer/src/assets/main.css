@@ -12,6 +12,20 @@ body {
     background-color: transparent;
 }
 
+/* Hide scrollbars globally to prevent them appearing on the frameless window */
+html,
+body,
+#root {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+    display: none;
+}
+
 /* Custom scrollbar for a cleaner look */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

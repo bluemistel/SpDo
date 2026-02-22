@@ -112,7 +112,7 @@ function createWindow() {
     title: "SpDo",
     width: 400,
     height: 600,
-    minWidth: 320,
+    minWidth: 380,
     minHeight: 400,
     maxWidth: 800,
     maxHeight: 1200,
@@ -186,7 +186,7 @@ electron.ipcMain.handle("resize-window", (event, collapsed) => {
   const window = electron.BrowserWindow.fromWebContents(event.sender);
   if (window) {
     if (collapsed) {
-      window.setSize(200, 60);
+      window.setSize(380, 60);
     } else {
       window.setSize(400, 600);
     }
