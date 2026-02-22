@@ -46,7 +46,7 @@ export function Header({
 
     return (
         <div
-            className="drag-region flex items-center justify-between px-3 py-2 rounded-t-lg transition-colors duration-300"
+            className={`drag-region flex items-center justify-between px-3 py-2 rounded-t-lg transition-colors duration-300 ${collapsed ? 'rounded-b-lg' : ''}`}
             style={{
                 background: `linear-gradient(to right, ${colors.from}, ${colors.to})`,
                 WebkitAppRegion: 'drag'

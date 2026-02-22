@@ -260,7 +260,7 @@ function App(): JSX.Element {
                     onUpdatePomodoroSettings={setPomodoroSettings}
                 />
                 {!collapsed && (
-                    <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 transition-colors">
+                    <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 transition-colors rounded-b-lg overflow-hidden">
                         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
                             <div className="flex items-center justify-between mb-2">
                                 <AddTaskForm onAdd={handleAddTask} tags={tags} onCreateTag={handleCreateTag} />
