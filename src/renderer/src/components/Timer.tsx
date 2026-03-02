@@ -10,6 +10,7 @@ interface TimerProps {
         breakDuration: number
         loops: number
     }
+    onMenuToggle?: (isOpen: boolean) => void
 }
 
 const DEFAULT_SETTINGS = {
@@ -18,7 +19,7 @@ const DEFAULT_SETTINGS = {
     loops: 4
 }
 
-export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element {
+export function Timer({ settings = DEFAULT_SETTINGS, onMenuToggle }: TimerProps): JSX.Element {
     const [mode, setMode] = useState<TimerMode>('pomodoro')
     const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60 * 1000)
     const [isActive, setIsActive] = useState(false)
@@ -169,7 +170,11 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
         <div className="relative font-mono text-white text-sm no-drag" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
             <div
                 className="flex items-center gap-2 bg-black/20 px-2 py-1 rounded cursor-pointer hover:bg-black/30 transition-colors"
-                onClick={() => setShowMenu(!showMenu)}
+                onClick={() => {
+                    const next = !showMenu
+                    setShowMenu(next)
+                    onMenuToggle?.(next)
+                }}
             >
                 {mode === 'pomodoro' && <TimerIcon size={14} />}
                 {mode === 'countdown' && <Hourglass size={14} />}
@@ -179,7 +184,10 @@ export function Timer({ settings = DEFAULT_SETTINGS }: TimerProps): JSX.Element 
 
             {showMenu && (
                 <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                    <div className="fixed inset-0 z-10" onClick={() => {
+                        setShowMenu(false)
+                        onMenuToggle?.(false)
+                    }} />
                     <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 z-20 text-gray-800 dark:text-gray-200">
                         <div className="flex justify-around mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">
                             <button

@@ -107,13 +107,18 @@ ipcMain.handle('close-window', (event) => {
     }
 })
 
-ipcMain.handle('resize-window', (event, collapsed: boolean) => {
+ipcMain.handle('resize-window', (event, collapsed: boolean, isMenuOpen: boolean = false) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
         if (collapsed) {
-            window.setSize(380, 60)
+            window.setResizable(false)
+            window.setMinimumSize(380, 60)
+            const height = isMenuOpen ? 350 : 60
+            window.setSize(380, height)
         } else {
+            window.setMinimumSize(380, 400)
             window.setSize(400, 600)
+            window.setResizable(true)
         }
     }
 })

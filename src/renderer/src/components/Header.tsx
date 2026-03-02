@@ -17,6 +17,7 @@ interface HeaderProps {
         loops: number
     }
     onUpdatePomodoroSettings: (settings: { workDuration: number; breakDuration: number; loops: number }) => void
+    onMenuToggle?: (isOpen: boolean) => void
 }
 
 export function Header({
@@ -27,7 +28,8 @@ export function Header({
     onMinimize,
     onClose,
     pomodoroSettings,
-    onUpdatePomodoroSettings
+    onUpdatePomodoroSettings,
+    onMenuToggle
 }: HeaderProps): JSX.Element {
     const { themeColor, setThemeColor, isDarkMode, setIsDarkMode, colors } = useTheme()
     const [showThemeMenu, setShowThemeMenu] = useState(false)
@@ -64,7 +66,7 @@ export function Header({
                 <span className="text-white text-sm font-semibold drop-shadow-sm">SpDo</span>
 
                 <div className="ml-2 border-l border-white/30 pl-2">
-                    <Timer settings={pomodoroSettings} />
+                    <Timer settings={pomodoroSettings} onMenuToggle={onMenuToggle} />
                 </div>
             </div>
 

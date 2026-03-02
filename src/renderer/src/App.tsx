@@ -17,6 +17,7 @@ const DEFAULT_STATUSES: Status[] = [
 
 function App(): JSX.Element {
     const [collapsed, setCollapsed] = useState(false)
+    const [isTimerMenuOpen, setIsTimerMenuOpen] = useState(false)
     const [alwaysOnTop, setAlwaysOnTop] = useState(false)
     const [tasks, setTasks] = useState<Task[]>([])
     const [statuses, setStatuses] = useState<Status[]>(DEFAULT_STATUSES)
@@ -108,10 +109,18 @@ function App(): JSX.Element {
         return () => clearInterval(interval)
     }, [])
 
-    const handleToggleCollapse = async () => {
-        const newCollapsed = !collapsed
-        setCollapsed(newCollapsed)
-        await window.api.resizeWindow(newCollapsed)
+    const handleToggleCollapse = async (): Promise<void> => {
+        const nextCollapsed = !collapsed
+        setCollapsed(nextCollapsed)
+        // If expanding, close menu from main process perspective (though state will sync)
+        await window.api.resizeWindow(nextCollapsed, nextCollapsed ? isTimerMenuOpen : false)
+    }
+
+    const handleTimerMenuToggle = (isOpen: boolean): void => {
+        setIsTimerMenuOpen(isOpen)
+        if (collapsed) {
+            window.api.resizeWindow(true, isOpen)
+        }
     }
 
     const handleTogglePin = async () => {
@@ -147,6 +156,16 @@ function App(): JSX.Element {
             color
         }
         setTags([...tags, newTag])
+    }
+
+    const handleDeleteTag = (tagId: string) => {
+        // Remove from tags list
+        setTags(tags.filter(t => t.id !== tagId))
+        // Remove from all tasks
+        setTasks(prevTasks => prevTasks.map(task => ({
+            ...task,
+            tags: task.tags.filter(id => id !== tagId)
+        })))
     }
 
     const handleDeleteTask = (id: string) => {
@@ -258,12 +277,18 @@ function App(): JSX.Element {
                     onClose={handleClose}
                     pomodoroSettings={pomodoroSettings}
                     onUpdatePomodoroSettings={setPomodoroSettings}
+                    onMenuToggle={handleTimerMenuToggle}
                 />
                 {!collapsed && (
                     <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-900 transition-colors rounded-b-lg overflow-hidden">
                         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
                             <div className="flex items-center justify-between mb-2">
-                                <AddTaskForm onAdd={handleAddTask} tags={tags} onCreateTag={handleCreateTag} />
+                                <AddTaskForm
+                                    onAdd={handleAddTask}
+                                    tags={tags}
+                                    onCreateTag={handleCreateTag}
+                                    onDeleteTag={handleDeleteTag}
+                                />
                                 <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 ml-2">
                                     <button
                                         onClick={() => setViewMode('list')}

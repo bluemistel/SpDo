@@ -6,7 +6,7 @@ const api = {
     toggleAlwaysOnTop: () => ipcRenderer.invoke('toggle-always-on-top'),
     minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
     closeWindow: () => ipcRenderer.invoke('close-window'),
-    resizeWindow: (collapsed: boolean) => ipcRenderer.invoke('resize-window', collapsed),
+    resizeWindow: (collapsed: boolean, isMenuOpen: boolean = false) => ipcRenderer.invoke('resize-window', collapsed, isMenuOpen),
     getTasks: () => ipcRenderer.invoke('get-tasks'),
     saveTasks: (tasks: unknown) => ipcRenderer.invoke('save-tasks', tasks),
     getTags: () => ipcRenderer.invoke('get-tags'),

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Tag as TagIcon } from 'lucide-react'
+import { Plus, Tag as TagIcon, X } from 'lucide-react'
 import { Tag } from '../types'
 
 const TAG_COLORS = [
@@ -16,9 +16,10 @@ interface AddTaskFormProps {
     onAdd: (title: string, dueDate: number, tags: string[]) => void
     tags: Tag[]
     onCreateTag: (name: string, color: string) => void
+    onDeleteTag: (tagId: string) => void
 }
 
-export function AddTaskForm({ onAdd, tags, onCreateTag }: AddTaskFormProps): JSX.Element {
+export function AddTaskForm({ onAdd, tags, onCreateTag, onDeleteTag }: AddTaskFormProps): JSX.Element {
     const [isOpen, setIsOpen] = useState(false)
     const [title, setTitle] = useState('')
     const [dueDate, setDueDate] = useState('')
@@ -26,6 +27,7 @@ export function AddTaskForm({ onAdd, tags, onCreateTag }: AddTaskFormProps): JSX
     const [showTagCreate, setShowTagCreate] = useState(false)
     const [newTagName, setNewTagName] = useState('')
     const [selectedColor, setSelectedColor] = useState<string | null>(null)
+    const [isDeleteMode, setIsDeleteMode] = useState(false)
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -94,13 +96,27 @@ export function AddTaskForm({ onAdd, tags, onCreateTag }: AddTaskFormProps): JSX
                         <TagIcon size={12} />
                         タグ
                     </span>
-                    <button
-                        type="button"
-                        onClick={() => setShowTagCreate(!showTagCreate)}
-                        className="text-xs text-accent hover:opacity-80"
-                    >
-                        + 新規作成
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsDeleteMode(!isDeleteMode)
+                                if (showTagCreate) setShowTagCreate(false)
+                            }}
+                            className="text-xs text-accent hover:opacity-80"
+                        >
+                            {isDeleteMode ? '戻る' : '削除'}
+                        </button>
+                        {!isDeleteMode && (
+                            <button
+                                type="button"
+                                onClick={() => setShowTagCreate(!showTagCreate)}
+                                className="text-xs text-accent hover:opacity-80"
+                            >
+                                + 新規作成
+                            </button>
+                        )}
+                    </div>
                 </div>
                 {showTagCreate && (
                     <div className="mb-2 p-2 bg-gray-50 rounded border border-gray-200">
@@ -140,12 +156,15 @@ export function AddTaskForm({ onAdd, tags, onCreateTag }: AddTaskFormProps): JSX
                         <button
                             key={tag.id}
                             type="button"
-                            onClick={() => toggleTag(tag.id)}
-                            className={`text-xs px-2 py-1 rounded-full transition-all ${selectedTags.includes(tag.id) ? 'opacity-100 font-medium' : 'opacity-50'
+                            onClick={() => isDeleteMode ? onDeleteTag(tag.id) : toggleTag(tag.id)}
+                            className={`text-xs px-2 py-1 rounded-full transition-all flex items-center gap-1 ${isDeleteMode
+                                ? 'opacity-100 ring-1 ring-red-400'
+                                : selectedTags.includes(tag.id) ? 'opacity-100 font-medium' : 'opacity-50'
                                 }`}
                             style={{ backgroundColor: tag.color + '30', color: tag.color }}
                         >
                             {tag.name}
+                            {isDeleteMode && <X size={10} className="text-red-500" />}
                         </button>
                     ))}
                 </div>

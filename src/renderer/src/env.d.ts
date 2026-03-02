@@ -4,7 +4,7 @@ interface IElectronAPI {
     toggleAlwaysOnTop: () => Promise<boolean>
     minimizeWindow: () => Promise<void>
     closeWindow: () => Promise<void>
-    resizeWindow: (collapsed: boolean) => Promise<void>
+    resizeWindow: (collapsed: boolean, isMenuOpen?: boolean) => Promise<void>
     getTasks: () => Promise<unknown>
     saveTasks: (tasks: unknown) => Promise<void>
     getTags: () => Promise<unknown>
